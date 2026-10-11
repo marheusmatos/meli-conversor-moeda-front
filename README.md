@@ -11,7 +11,11 @@ Tela em React + Vite do conversor de moedas. Consome a API do repositório [meli
 | Taxas | `#/taxas` | Lista as taxas com a data da última atualização, cadastra ou atualiza uma taxa e atualiza todas pelo câmbio real |
 | Moedas | `#/moedas` | Adiciona uma moeda nova e lista as disponíveis |
 
+| Apresentação | `#/apresentacao` | Abertura animada com o logo e um carrossel que resume o projeto, a arquitetura e a documentação |
+
 As moedas e as taxas vêm sempre da API; nenhuma fica no código.
+
+A apresentação abre sozinha na primeira visita e pode ser revista pelo link do rodapé. Para a abertura tocar um som, coloque o arquivo de áudio em `src/assets/jingle.mp3`; sem ele, a abertura roda em silêncio. O navegador só libera som depois de um clique, então na primeira visita aparece o botão "Ativar som".
 
 O visual segue o [Andes Design System](https://mercado-livre-meli-plus-ux-challeng.vercel.app/ui-design/andes-design-system) do Mercado Livre: os tokens de cor, tipografia, espaçamento, borda e sombra estão no topo de `src/index.css`. As páginas usam o `#` do endereço, então o `dist/` funciona em qualquer servidor de arquivos estáticos e em qualquer subcaminho.
 

@@ -5,6 +5,7 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react'
+import Apresentacao from './Apresentacao.jsx'
 import logo from './assets/logo.png'
 
 const API = import.meta.env.VITE_API_URL
@@ -16,6 +17,14 @@ const PAGINAS = [
   ['/taxas', 'Taxas'],
   ['/moedas', 'Moedas'],
 ]
+
+function jaViuApresentacao() {
+  try {
+    return Boolean(localStorage.getItem('apresentacaoVista'))
+  } catch {
+    return true
+  }
+}
 
 async function api(rota, method = 'GET') {
   let resposta
@@ -154,7 +163,7 @@ function SeletorDeMoeda({ rotulo, taxas, exigirTaxa, name, value, onChange }) {
       >
         <span className="andes-dropdown__valor" id={`${id}valor`}>
           <span className="andes-dropdown__display-values">{atual}</span>{' '}
-          {nomeDaMoeda(atual)}
+          <span className="andes-dropdown__nome">{nomeDaMoeda(atual)}</span>
         </span>
         <svg
           className="andes-dropdown__arrow"
@@ -535,6 +544,7 @@ export default function App() {
   const [resultado, setResultado] = useState(null)
   const [aviso, setAviso] = useState(null)
   const [ocupado, setOcupado] = useState(false)
+  const [apresentando, setApresentando] = useState(() => !jaViuApresentacao())
   const faltamTaxas = pagina !== '/historico' && !taxas
 
   const recarregar = async () => setTaxas(await api('/taxas'))
@@ -669,11 +679,21 @@ export default function App() {
       </main>
 
       <footer className="largura">
-        Projeto independente, desenvolvido como teste técnico para o Mercado
-        Livre. Não é um produto oficial e não tem afiliação, patrocínio nem
-        endosso do Mercado Livre. A marca e o logotipo Mercado Livre pertencem
-        aos seus titulares e são usados aqui apenas para fins de demonstração.
+        <button className="rever" onClick={() => setApresentando(true)}>
+          Ver a apresentação do projeto
+        </button>
+        <p>
+          Projeto independente, desenvolvido como teste técnico para o Mercado
+          Livre. Não é um produto oficial e não tem afiliação, patrocínio nem
+          endosso do Mercado Livre. A marca e o logotipo Mercado Livre
+          pertencem aos seus titulares e são usados aqui apenas para fins de
+          demonstração.
+        </p>
       </footer>
+
+      {apresentando && (
+        <Apresentacao aoFechar={() => setApresentando(false)} />
+      )}
 
       {taxas && aviso?.pagina === pagina && (
         <div

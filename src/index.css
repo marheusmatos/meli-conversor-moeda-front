@@ -597,7 +597,19 @@ th {
   margin-left: auto;
 }
 
+.rever {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--andes-blue);
+  font: inherit;
+  cursor: pointer;
+}
+
 footer.largura {
+  display: grid;
+  gap: var(--andes-space-2);
+  justify-items: start;
   padding-bottom: var(--andes-space-5);
   font-size: var(--andes-font-size-xs);
   color: var(--andes-gray-700);
@@ -605,17 +617,21 @@ footer.largura {
 
 @media (max-width: 520px) {
   .conversor__moedas {
-    flex-direction: column;
-    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: var(--andes-space-2);
   }
 
   .conversor__moedas .andes-form-group {
-    flex-basis: auto;
+    flex-basis: 0;
   }
 
-  .conversor__inverter {
-    align-self: center;
-    transform: rotate(90deg);
+  .conversor__moedas .andes-dropdown__nome {
+    display: none;
+  }
+
+  .conversor__moedas .andes-dropdown:last-child .dropdown-menu {
+    left: auto;
+    right: -10px;
   }
 
   .linha .andes-button {
