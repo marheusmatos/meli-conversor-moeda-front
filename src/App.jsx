@@ -101,6 +101,7 @@ function Converter({ taxas, resultado, ocupado, aoConverter }) {
   const comTaxa = taxas.filter((t) => t.valor !== null)
   const [origem, setOrigem] = useState(comTaxa[0]?.moeda)
   const [destino, setDestino] = useState(comTaxa[1]?.moeda)
+  const [giros, setGiros] = useState(0)
 
   if (comTaxa.length < 2)
     return (
@@ -161,9 +162,10 @@ function Converter({ taxas, resultado, ocupado, aoConverter }) {
             onClick={() => {
               setOrigem(destino)
               setDestino(origem)
+              setGiros(giros + 1)
             }}
           >
-            ⇄
+            <span style={{ transform: `rotate(${giros * 180}deg)` }}>⇄</span>
           </button>
           <Campo rotulo="Para">
             <SeletorDeMoeda
@@ -234,7 +236,7 @@ function Historico({ conversoes }) {
           </thead>
           <tbody>
             {conversoes.map((c, i) => (
-              <tr key={i}>
+              <tr key={i} style={{ '--i': i }}>
                 <td>{c.moeda_origem}</td>
                 <td>{c.moeda_destino}</td>
                 <td className="num">{numero(c.valor)}</td>
@@ -270,8 +272,8 @@ function Taxas({ taxas, ocupado, aoSalvar, aoAtualizar }) {
               </tr>
             </thead>
             <tbody>
-              {taxas.map((t) => (
-                <tr key={t.moeda}>
+              {taxas.map((t, i) => (
+                <tr key={t.moeda} style={{ '--i': i }}>
                   <td>
                     <strong>{t.moeda}</strong>
                     <span className="suave"> {nomeDaMoeda(t.moeda)}</span>
@@ -383,8 +385,8 @@ function Moedas({ taxas, ocupado, aoAdicionar }) {
       <div className="andes-card">
         <h2>Moedas disponíveis</h2>
         <ul className="moedas">
-          {taxas.map((t) => (
-            <li key={t.moeda}>
+          {taxas.map((t, i) => (
+            <li key={t.moeda} style={{ '--i': i }}>
               <strong>{t.moeda}</strong>
               <span className="suave">{nomeDaMoeda(t.moeda)}</span>
               {t.valor === null && (

@@ -32,6 +32,13 @@
   --andes-radius-md: 6px;
   --andes-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.12);
   --andes-shadow-md: 0 4px 8px rgba(0, 0, 0, 0.16);
+  --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-sys-motion-duration-short3: 150ms;
+  --md-sys-motion-duration-short4: 200ms;
+  --md-sys-motion-duration-medium2: 300ms;
+  --md-sys-motion-duration-medium4: 400ms;
   font-family: var(--andes-font-family);
   font-size: var(--andes-font-size-md);
   line-height: 1.35;
@@ -40,6 +47,10 @@
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -308,10 +319,6 @@ p {
   color: var(--andes-gray-900);
 }
 
-.andes-modal::backdrop {
-  background: rgba(0, 0, 0, 0.8);
-}
-
 .andes-modal p {
   color: var(--andes-gray-700);
   font-size: var(--andes-font-size-sm);
@@ -424,6 +431,7 @@ p {
 
 .tabela {
   overflow-x: auto;
+  overflow-y: hidden;
   margin-bottom: var(--andes-space-4);
 }
 
@@ -510,8 +518,107 @@ footer.largura {
   }
 }
 
+@keyframes fade-through {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+.pagina {
+  transform-origin: top center;
+  animation: fade-through var(--md-sys-motion-duration-medium2)
+    var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.resultado {
+  animation: subir var(--md-sys-motion-duration-medium4)
+    var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.andes-snackbar {
+  animation: subir var(--md-sys-motion-duration-medium2)
+    var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+tbody tr,
+.moedas li {
+  animation: subir var(--md-sys-motion-duration-medium2)
+    var(--md-sys-motion-easing-emphasized-decelerate) backwards;
+  animation-delay: calc(var(--i) * 50ms);
+}
+
+.conversor__inverter span {
+  display: inline-block;
+  transition: transform var(--md-sys-motion-duration-medium2)
+    var(--md-sys-motion-easing-emphasized);
+}
+
+.andes-modal {
+  opacity: 0;
+  transform: scale(0.92);
+  transition:
+    opacity var(--md-sys-motion-duration-short4)
+      var(--md-sys-motion-easing-emphasized-accelerate),
+    transform var(--md-sys-motion-duration-short4)
+      var(--md-sys-motion-easing-emphasized-accelerate),
+    overlay var(--md-sys-motion-duration-short4) allow-discrete,
+    display var(--md-sys-motion-duration-short4) allow-discrete;
+}
+
+.andes-modal[open] {
+  opacity: 1;
+  transform: none;
+  transition-duration: var(--md-sys-motion-duration-medium4);
+  transition-timing-function: var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.andes-modal::backdrop {
+  background: rgba(0, 0, 0, 0);
+  transition:
+    background-color var(--md-sys-motion-duration-short4) linear,
+    overlay var(--md-sys-motion-duration-short4) allow-discrete,
+    display var(--md-sys-motion-duration-short4) allow-discrete;
+}
+
+.andes-modal[open]::backdrop {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+@starting-style {
+  .andes-modal[open] {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  .andes-modal[open]::backdrop {
+    background: rgba(0, 0, 0, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .andes-spinner {
     animation-duration: 3s;
+  }
+
+  .pagina,
+  .resultado,
+  .andes-snackbar,
+  tbody tr,
+  .moedas li {
+    animation: none;
+  }
+
+  .andes-modal,
+  .andes-modal::backdrop,
+  .conversor__inverter span {
+    transition: none;
   }
 }
