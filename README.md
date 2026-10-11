@@ -38,6 +38,14 @@ npm run build     # gera dist/
 npm run lint
 ```
 
+## Deploy
+
+O `Jenkinsfile` constrói a imagem Docker (Node para o build, nginx para servir o `dist/`) e sobe o container em `127.0.0.1:5501`.
+
+O endereço da API entra no build pela variável `VITE_API_URL` do próprio `Jenkinsfile`. O valor é `/meli/api`, sem domínio, porque o site e a API ficam no mesmo endereço; assim funciona em HTTP e em HTTPS.
+
+O proxy do servidor precisa encaminhar `/meli/` para essa porta, removendo o prefixo, e manter `/meli/api/` apontando para a API.
+
 ## Créditos
 
 Cotações do câmbio real: [Rates By Exchange Rate API](https://www.exchangerate-api.com).
