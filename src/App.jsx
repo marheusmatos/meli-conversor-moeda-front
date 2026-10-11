@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import logo from './assets/logo.png'
 
 const API = import.meta.env.VITE_API_URL
@@ -70,20 +76,124 @@ function Campo({ rotulo, ajuda, children }) {
   )
 }
 
-function SeletorDeMoeda({ taxas, exigirTaxa, ...props }) {
+function SeletorDeMoeda({ rotulo, taxas, exigirTaxa, name, value, onChange }) {
+  const [interno, setInterno] = useState(taxas[0]?.moeda)
+  const [aberto, setAberto] = useState(false)
+  const raiz = useRef(null)
+  const id = useId()
+  const atual = value ?? interno
+  const livres = '[role=option]:not([aria-disabled])'
+
+  useEffect(() => {
+    if (!aberto) return
+    const lista = raiz.current.querySelector('[role=listbox]')
+    const inicial =
+      lista.querySelector('[aria-selected=true]:not([aria-disabled])') ??
+      lista.querySelector(livres)
+    inicial?.focus()
+    lista.scrollIntoView({ block: 'nearest' })
+    const fora = (e) => {
+      if (!raiz.current.contains(e.target)) setAberto(false)
+    }
+    document.addEventListener('pointerdown', fora)
+    return () => document.removeEventListener('pointerdown', fora)
+  }, [aberto])
+
+  function fechar() {
+    setAberto(false)
+    raiz.current.querySelector('button').focus()
+  }
+
+  function escolher(moeda) {
+    setInterno(moeda)
+    onChange?.(moeda)
+    fechar()
+  }
+
+  function aoTeclar(e) {
+    const opcoes = [...e.currentTarget.querySelectorAll(livres)]
+    const i = opcoes.indexOf(document.activeElement)
+    const ir = (n) => {
+      e.preventDefault()
+      opcoes[Math.max(0, Math.min(opcoes.length - 1, n))]?.focus()
+    }
+    if (e.key === 'ArrowDown') ir(i + 1)
+    else if (e.key === 'ArrowUp') ir(i - 1)
+    else if (e.key === 'Home') ir(0)
+    else if (e.key === 'End') ir(opcoes.length - 1)
+    else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      document.activeElement.click()
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      fechar()
+    } else if (e.key === 'Tab') setAberto(false)
+    else if (e.key.length === 1)
+      opcoes
+        .find((o) => o.dataset.moeda.startsWith(e.key.toUpperCase()))
+        ?.focus()
+  }
+
   return (
-    <select className="andes-input" {...props}>
-      {taxas.map((t) => (
-        <option
-          key={t.moeda}
-          value={t.moeda}
-          disabled={exigirTaxa && t.valor === null}
+    <div className="andes-form-group andes-dropdown" ref={raiz}>
+      <span className="andes-label" id={`${id}rotulo`}>
+        {rotulo}
+      </span>
+      <button
+        type="button"
+        className="andes-dropdown__trigger"
+        aria-haspopup="listbox"
+        aria-expanded={aberto}
+        aria-labelledby={`${id}rotulo ${id}valor`}
+        onClick={() => setAberto(!aberto)}
+        onKeyDown={(e) => {
+          if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+          e.preventDefault()
+          setAberto(true)
+        }}
+      >
+        <span className="andes-dropdown__valor" id={`${id}valor`}>
+          <span className="andes-dropdown__display-values">{atual}</span>{' '}
+          {nomeDaMoeda(atual)}
+        </span>
+        <svg
+          className="andes-dropdown__arrow"
+          viewBox="0 0 12 12"
+          aria-hidden="true"
         >
-          {[t.moeda, nomeDaMoeda(t.moeda)].filter(Boolean).join(' · ')}
-          {exigirTaxa && t.valor === null ? ' (sem taxa)' : ''}
-        </option>
-      ))}
-    </select>
+          <path d="M6 8.6 1.4 4l.9-.9L6 6.8l3.7-3.7.9.9z" />
+        </svg>
+      </button>
+      <input type="hidden" name={name} value={atual ?? ''} />
+      {aberto && (
+        <ul
+          className="dropdown-menu"
+          role="listbox"
+          aria-labelledby={`${id}rotulo`}
+          onKeyDown={aoTeclar}
+        >
+          {taxas.map((t) => {
+            const semTaxa = exigirTaxa && t.valor === null
+            return (
+              <li
+                key={t.moeda}
+                className="dropdown-item"
+                role="option"
+                tabIndex={-1}
+                data-moeda={t.moeda}
+                aria-selected={t.moeda === atual}
+                aria-disabled={semTaxa || undefined}
+                onClick={() => semTaxa || escolher(t.moeda)}
+              >
+                <strong>{t.moeda}</strong>
+                <span>{nomeDaMoeda(t.moeda)}</span>
+                {semTaxa && <span className="andes-badge">Sem taxa</span>}
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </div>
   )
 }
 
@@ -145,15 +255,14 @@ function Converter({ taxas, resultado, ocupado, aoConverter }) {
           />
         </Campo>
         <div className="conversor__moedas">
-          <Campo rotulo="De">
-            <SeletorDeMoeda
-              taxas={taxas}
-              exigirTaxa
-              name="origem"
-              value={origem}
-              onChange={(e) => escolherOrigem(e.target.value)}
-            />
-          </Campo>
+          <SeletorDeMoeda
+            rotulo="De"
+            taxas={taxas}
+            exigirTaxa
+            name="origem"
+            value={origem}
+            onChange={escolherOrigem}
+          />
           <button
             type="button"
             className="andes-button andes-button--quiet conversor__inverter"
@@ -167,15 +276,14 @@ function Converter({ taxas, resultado, ocupado, aoConverter }) {
           >
             <span style={{ transform: `rotate(${giros * 180}deg)` }}>⇄</span>
           </button>
-          <Campo rotulo="Para">
-            <SeletorDeMoeda
-              taxas={taxas}
-              exigirTaxa
-              name="destino"
-              value={destino}
-              onChange={(e) => escolherDestino(e.target.value)}
-            />
-          </Campo>
+          <SeletorDeMoeda
+            rotulo="Para"
+            taxas={taxas}
+            exigirTaxa
+            name="destino"
+            value={destino}
+            onChange={escolherDestino}
+          />
         </div>
         <button
           className="andes-button andes-button--primary andes-button--full"
@@ -300,14 +408,18 @@ function Taxas({ taxas, ocupado, aoSalvar, aoAtualizar }) {
         >
           Atualizar pelo câmbio real
         </button>
+        <p className="andes-input-helper">
+          Cotações:{' '}
+          <a href="https://www.exchangerate-api.com">
+            Rates By Exchange Rate API
+          </a>
+        </p>
       </div>
 
       <div className="andes-card">
         <h2>Cadastrar ou atualizar taxa</h2>
         <form className="linha" onSubmit={aoSalvar}>
-          <Campo rotulo="Moeda">
-            <SeletorDeMoeda taxas={taxas} name="moeda" />
-          </Campo>
+          <SeletorDeMoeda rotulo="Moeda" taxas={taxas} name="moeda" />
           <Campo rotulo="Quanto vale 1 USD nessa moeda">
             <input
               className="andes-input"
@@ -554,10 +666,10 @@ export default function App() {
       </main>
 
       <footer className="largura">
-        Cotações do câmbio real:{' '}
-        <a href="https://www.exchangerate-api.com">
-          Rates By Exchange Rate API
-        </a>
+        Projeto independente, desenvolvido como teste técnico para o Mercado
+        Livre. Não é um produto oficial e não tem afiliação, patrocínio nem
+        endosso do Mercado Livre. A marca e o logotipo Mercado Livre pertencem
+        aos seus titulares e são usados aqui apenas para fins de demonstração.
       </footer>
 
       {taxas && aviso?.pagina === pagina && (

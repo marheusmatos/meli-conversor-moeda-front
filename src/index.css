@@ -207,6 +207,110 @@ p {
   color: var(--andes-gray-700);
 }
 
+.andes-dropdown {
+  position: relative;
+  align-items: flex-start;
+}
+
+.andes-dropdown__trigger {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 48px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--andes-gray-900);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.andes-dropdown__trigger:hover,
+.andes-dropdown__trigger[aria-expanded='true'] {
+  color: var(--andes-blue);
+}
+
+.andes-dropdown__valor {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.andes-dropdown__display-values {
+  font-weight: 600;
+}
+
+.andes-dropdown__arrow {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin-left: var(--andes-space-2);
+  fill: var(--andes-blue);
+  transition: transform 0.2s ease;
+}
+
+[aria-expanded='true'] > .andes-dropdown__arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: -10px;
+  z-index: 100;
+  min-width: 280px;
+  max-width: calc(100vw - 32px);
+  max-height: 320px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 10px 0;
+  list-style: none;
+  background: var(--andes-white);
+  border-radius: var(--andes-radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: var(--andes-space-2);
+  padding: 10px var(--andes-space-4);
+  font-size: var(--andes-font-size-sm);
+  color: var(--andes-gray-900);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: var(--andes-gray-100);
+  color: var(--andes-blue);
+}
+
+.dropdown-item:focus-visible {
+  outline-offset: -2px;
+}
+
+.dropdown-item[aria-selected='true'] {
+  color: var(--andes-blue);
+}
+
+.dropdown-item[aria-disabled] {
+  background: none;
+  color: var(--andes-gray-500);
+  cursor: not-allowed;
+}
+
+.dropdown-item .andes-badge {
+  margin-left: auto;
+}
+
+.andes-button + .andes-input-helper {
+  display: block;
+  margin-top: var(--andes-space-3);
+}
+
 .andes-button {
   display: inline-flex;
   align-items: center;
@@ -532,6 +636,18 @@ footer.largura {
   }
 }
 
+@keyframes descer {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.dropdown-menu {
+  animation: descer var(--md-sys-motion-duration-short4)
+    var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
 .pagina {
   transform-origin: top center;
   animation: fade-through var(--md-sys-motion-duration-medium2)
@@ -611,6 +727,7 @@ tbody tr,
   .pagina,
   .resultado,
   .andes-snackbar,
+  .dropdown-menu,
   tbody tr,
   .moedas li {
     animation: none;
