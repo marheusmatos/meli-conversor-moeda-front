@@ -317,7 +317,21 @@ function Converter({ taxas, resultado, ocupado, aoConverter }) {
   )
 }
 
-function Historico({ conversoes }) {
+function Historico() {
+  const [conversoes, setConversoes] = useState(null)
+  const [erro, setErro] = useState(null)
+
+  useEffect(() => {
+    api('/conversoes').then(setConversoes, (e) =>
+      e.status === 404 ? setConversoes([]) : setErro(e.message),
+    )
+  }, [])
+
+  if (erro) return <Vazio titulo="Não foi possível carregar" texto={erro} />
+  if (!conversoes)
+    return (
+      <div className="andes-spinner" role="status" aria-label="Carregando" />
+    )
   if (!conversoes.length)
     return (
       <Vazio
@@ -518,32 +532,18 @@ export default function App() {
   const rota = useSyncExternalStore(ouvirRota, lerRota)
   const [pagina, titulo] = PAGINAS.find(([c]) => c === rota) ?? PAGINAS[0]
   const [taxas, setTaxas] = useState(null)
-  const [conversoes, setConversoes] = useState([])
   const [resultado, setResultado] = useState(null)
   const [aviso, setAviso] = useState(null)
   const [ocupado, setOcupado] = useState(false)
+  const faltamTaxas = pagina !== '/historico' && !taxas
 
-  async function buscar() {
-    return [
-      await api('/taxas'),
-      await api('/conversoes').catch((erro) => {
-        if (erro.status === 404) return []
-        throw erro
-      }),
-    ]
-  }
-
-  function mostrar([novasTaxas, novasConversoes]) {
-    setTaxas(novasTaxas)
-    setConversoes(novasConversoes)
-  }
+  const recarregar = async () => setTaxas(await api('/taxas'))
 
   async function executar(acao) {
     setOcupado(true)
     setAviso(null)
     try {
       const texto = await acao()
-      mostrar(await buscar())
       if (texto) setAviso({ ok: true, texto, pagina })
     } catch (erro) {
       setAviso({ texto: erro.message, pagina })
@@ -552,8 +552,9 @@ export default function App() {
   }
 
   useEffect(() => {
-    buscar().then(mostrar, (erro) => setAviso({ texto: erro.message }))
-  }, [])
+    if (faltamTaxas)
+      api('/taxas').then(setTaxas, (erro) => setAviso({ texto: erro.message }))
+  }, [faltamTaxas])
 
   useEffect(() => {
     document.title = `${titulo} | Conversor de moedas`
@@ -580,6 +581,7 @@ export default function App() {
       'POST',
     )
     form.reset()
+    await recarregar()
     return mensagem
   })
 
@@ -589,12 +591,14 @@ export default function App() {
       'POST',
     )
     form.reset()
+    await recarregar()
     return mensagem
   })
 
   const aoAtualizar = () =>
     executar(async () => {
       await api('/taxas/atualizar', 'POST')
+      await recarregar()
       return 'Taxas atualizadas pelo câmbio real.'
     })
 
@@ -605,7 +609,6 @@ export default function App() {
           <a href="#/">
             <img src={logo} alt="Mercado Livre" width="134" height="34" />
           </a>
-          <span>Conversor de moedas</span>
         </div>
       </header>
       <nav aria-label="Páginas">
@@ -625,13 +628,15 @@ export default function App() {
       <main className="largura">
         <div className="pagina" key={pagina}>
           <h1>{titulo}</h1>
-          {!taxas ? (
+          {pagina === '/historico' ? (
+            <Historico />
+          ) : !taxas ? (
             aviso ? (
               <Vazio titulo="Não foi possível carregar" texto={aviso.texto}>
                 <button
                   className="andes-button andes-button--primary"
                   disabled={ocupado}
-                  onClick={() => executar(() => {})}
+                  onClick={() => executar(recarregar)}
                 >
                   Tentar de novo
                 </button>
@@ -643,8 +648,6 @@ export default function App() {
                 aria-label="Carregando"
               />
             )
-          ) : pagina === '/historico' ? (
-            <Historico conversoes={conversoes} />
           ) : pagina === '/taxas' ? (
             <Taxas
               taxas={taxas}

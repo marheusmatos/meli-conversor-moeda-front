@@ -50,7 +50,13 @@
 }
 
 html {
-  scrollbar-gutter: stable;
+  overflow-y: scroll;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
 }
 
 body {
@@ -74,6 +80,7 @@ a:hover {
 }
 
 .largura {
+  width: 100%;
   max-width: 760px;
   margin: 0 auto;
   padding: 0 var(--andes-space-4);
@@ -92,13 +99,6 @@ header {
 
 .cabecalho a {
   display: flex;
-}
-
-.cabecalho span {
-  padding-left: var(--andes-space-4);
-  border-left: 1px solid rgba(0, 0, 0, 0.2);
-  font-size: var(--andes-font-size-sm);
-  color: var(--andes-gray-900);
 }
 
 nav {
@@ -127,12 +127,14 @@ nav a[aria-current] {
 }
 
 main.largura {
+  flex: 1;
   padding-top: var(--andes-space-6);
-  padding-bottom: var(--andes-space-5);
+  padding-bottom: var(--andes-space-6);
 }
 
 .pagina {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--andes-space-4);
 }
 
@@ -596,7 +598,7 @@ th {
 }
 
 footer.largura {
-  padding-bottom: 96px;
+  padding-bottom: var(--andes-space-5);
   font-size: var(--andes-font-size-xs);
   color: var(--andes-gray-700);
 }
